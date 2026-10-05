@@ -1,0 +1,526 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Love Tester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gloock&family=Hanken+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: carnival grip-tester. Names form and result on the left, a tall glass tube meter on the right. Stacks to one column on phones. */
+:root {
+  --bg: #FAF1F2;
+  --panel: #FFFFFF;
+  --fg: #2A0F18;
+  --muted: #7A5560;
+  --line: #E8CDD3;
+  --glass: #F1DADF;
+  --accent: #D71F4B;
+  --accent-ink: #FFFFFF;
+  --brass: #A87A1E;
+  --font-display: 'Gloock', Georgia, serif;
+  --font-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1A0A10;
+    --panel: #261119;
+    --fg: #FBE9ED;
+    --muted: #BE95A0;
+    --line: #4A2631;
+    --glass: #301823;
+    --accent: #FF4B72;
+    --accent-ink: #1A0A10;
+    --brass: #E3B04B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1A0A10;
+  --panel: #261119;
+  --fg: #FBE9ED;
+  --muted: #BE95A0;
+  --line: #4A2631;
+  --glass: #301823;
+  --accent: #FF4B72;
+  --accent-ink: #1A0A10;
+  --brass: #E3B04B;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  padding-inline: clamp(16px, 5vw, 40px);
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 960px; margin-inline: auto; }
+
+/* Marquee */
+.marquee { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+.lights { position: relative; height: 10px; background: radial-gradient(circle, var(--brass) 0 3px, transparent 4px) 0 50% / 20px 10px repeat-x; }
+.lights::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle, var(--accent) 0 3px, transparent 4px) 10px 50% / 20px 10px repeat-x;
+  animation: twinkle 1.1s steps(1) infinite alternate;
+}
+@keyframes twinkle { from { opacity: 1; } to { opacity: 0; } }
+.kicker { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(3rem, 10vw, 5.5rem); line-height: 0.98; margin: 0; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--accent); }
+.lede { margin: 0; max-width: 46ch; color: var(--muted); }
+
+/* Layout */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-areas: "form meter" "result meter";
+  gap: 28px 56px;
+  align-items: start;
+}
+.form { grid-area: form; min-width: 0; }
+.meter-wrap { grid-area: meter; justify-self: center; }
+.result { grid-area: result; min-width: 0; }
+@media (max-width: 760px) {
+  .stage { grid-template-columns: minmax(0, 1fr); grid-template-areas: "form" "meter" "result"; }
+}
+
+/* Form */
+.fields { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: end; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.field input {
+  width: 100%; font: inherit; font-size: 1.25rem; color: var(--fg);
+  background: var(--panel); border: 1.5px solid var(--line); border-radius: 4px; padding: 12px 14px;
+}
+.field input::placeholder { color: var(--muted); opacity: 0.7; }
+.join { padding-bottom: 14px; color: var(--accent); display: flex; }
+.join svg { width: 26px; height: 26px; fill: currentColor; }
+@media (max-width: 520px) {
+  .fields { grid-template-columns: minmax(0, 1fr); }
+  .join { display: none; }
+}
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 18px; }
+.go {
+  font: inherit; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 4px; padding: 14px 24px;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.go:hover:not(:disabled) { transform: translateY(-2px); }
+.go:disabled { opacity: 0.65; cursor: progress; }
+.err { margin: 0; min-height: 1.4em; font-size: 0.9rem; color: var(--accent); }
+.note { margin: 14px 0 0; font-family: var(--font-mono); font-size: 0.74rem; color: var(--muted); }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Result */
+.result-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px clamp(16px, 4vw, 28px) 24px; display: flex; flex-direction: column; gap: 14px; }
+.pair { margin: 0; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+.score { display: flex; align-items: baseline; gap: 4px; font-family: var(--font-display); line-height: 0.9; font-variant-numeric: tabular-nums; }
+.score .num { font-size: clamp(5rem, 17vw, 8rem); color: var(--accent); }
+.score .pct { font-size: clamp(1.8rem, 6vw, 3rem); color: var(--muted); }
+.tier { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 5vw, 2.3rem); line-height: 1.1; text-wrap: balance; }
+.blurb { margin: 0; max-width: 46ch; color: var(--muted); }
+.bars { display: grid; gap: 10px; margin-top: 4px; }
+.bar { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 2.6rem; gap: 12px; align-items: center; font-family: var(--font-mono); font-size: 0.78rem; }
+.bar .track { height: 6px; background: var(--glass); border-radius: 3px; overflow: hidden; }
+.bar .track span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 1.1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.bar .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.share { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+.share-line { flex: 1 1 14rem; min-width: 0; margin: 0; font-size: 0.92rem; overflow-wrap: anywhere; }
+.copy { font: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; color: var(--fg); background: transparent; border: 1.5px solid var(--line); border-radius: 4px; padding: 8px 14px; }
+.copy:hover { border-color: var(--accent); }
+
+/* Tube meter */
+.meter { --bulb: 92px; --track: 288px; --p: 0; position: relative; width: 240px; height: 380px; }
+.tube { position: absolute; left: 20px; top: 0; bottom: 46px; width: 52px; border-radius: 26px 26px 0 0; background: var(--glass); border: 2px solid var(--line); border-bottom: 0; overflow: hidden; }
+.fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(46px + var(--p) * var(--track) / 100); background: var(--accent); box-shadow: inset 9px 0 0 rgba(255, 255, 255, 0.28); }
+.bulb { position: absolute; left: 0; bottom: 0; width: var(--bulb); height: var(--bulb); border-radius: 50%; background: var(--accent); border: 2px solid var(--line); box-shadow: inset 14px 12px 0 -6px rgba(255, 255, 255, 0.28); }
+.tick { position: absolute; left: 66px; width: 14px; height: 0; border-top: 1.5px solid var(--line); }
+.band { position: absolute; left: 90px; right: 0; height: 16px; display: flex; align-items: center; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; transition: color 0.2s ease; }
+.band.on { color: var(--fg); font-weight: 500; }
+.band.on::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: -14px; margin-right: 6px; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lights::after { animation: none; opacity: 0; }
+  .go, .bar .track span, .band { transition: none; }
+}
+
+/* Admin dashboard */
+.admin-tools{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+.admin-btn,.dash-btn{font:inherit;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:var(--panel);color:var(--fg);border-radius:5px;padding:10px 14px}
+.admin-btn:hover,.dash-btn:hover{border-color:var(--accent)}
+.admin-panel{display:none;margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:22px}
+.admin-panel.open{display:block}
+.login-box{max-width:360px;margin:0 auto;text-align:center}
+.login-box h2,.dashboard h2{font-family:var(--font-display);font-weight:400;margin:0 0 8px}
+.login-box p{color:var(--muted)}
+.login-box input{width:100%;font:inherit;padding:12px;border:1.5px solid var(--line);border-radius:4px;background:var(--bg);color:var(--fg);margin:8px 0 12px}
+.login-actions{display:flex;gap:10px;justify-content:center}
+.login-error{color:var(--accent);min-height:1.4em;font-size:.9rem}
+.dashboard{display:none}
+.dashboard.open{display:block}
+.dash-head{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.stat{border:1px solid var(--line);border-radius:6px;padding:16px;background:var(--bg)}
+.stat small{display:block;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;font-size:.68rem}
+.stat strong{display:block;font-family:var(--font-display);font-size:2rem;margin-top:5px}
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.analysis-card{border:1px solid var(--line);border-radius:6px;padding:16px}
+.analysis-card h3{margin:0 0 12px;font-family:var(--font-display);font-weight:400}
+.barrow{display:grid;grid-template-columns:8rem 1fr 3rem;gap:9px;align-items:center;margin:9px 0;font-family:var(--font-mono);font-size:.75rem}
+.bartrack{height:8px;background:var(--glass);border-radius:5px;overflow:hidden}.bartrack i{display:block;height:100%;background:var(--accent)}
+.dash-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:6px}
+.dash-table{width:100%;border-collapse:collapse;min-width:650px}
+.dash-table th,.dash-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+.dash-table th{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.dash-table tr:last-child td{border-bottom:0}
+.empty{padding:25px;text-align:center;color:var(--muted)}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}.analytics-grid{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <header class="marquee">
+    <div class="lights" aria-hidden="true"></div>
+    <div class="kicker">Grip reading, for fun</div>
+    <h1>Love <em>Tester</em></h1>
+    <p class="lede">Type two names and read the tube. The same two names always give the same balanced reading, in either order.</p>
+  </header>
+
+  <main class="stage">
+    <form class="form" id="form" novalidate>
+      <div class="fields">
+        <div class="field">
+          <label for="a">First name</label>
+          <input id="a" name="a" type="text" value="Layla" autocomplete="off" maxlength="30" placeholder="Your name">
+        </div>
+        <div class="join" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+        <div class="field">
+          <label for="b">Second name</label>
+          <input id="b" name="b" type="text" value="Majnun" autocomplete="off" maxlength="30" placeholder="Their name">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="go" id="go" type="submit">Test our love</button>
+        <p class="err" id="err" role="alert"></p>
+      </div>
+      <p class="note" id="note">Your test is recorded anonymously for the site owner's shared analytics.</p>
+    </form>
+
+    <div class="meter-wrap">
+      <div class="meter" id="meter" aria-hidden="true">
+        <div class="tube"><div class="fill" id="fill"></div></div>
+        <div class="bulb"></div>
+      </div>
+    </div>
+
+    <section class="result" aria-labelledby="tier">
+      <div class="result-card">
+        <p class="pair" id="pair"></p>
+        <div class="score"><span class="num" id="num">0</span><span class="pct">%</span></div>
+        <h2 class="tier" id="tier"></h2>
+        <p class="blurb" id="blurb"></p>
+        <div class="bars" id="bars"></div>
+        <div class="share">
+          <p class="share-line" id="shareLine"></p>
+          <button class="copy" id="copy" type="button">Copy result</button>
+        </div>
+      </div>
+    </section>
+    <p class="sr" id="status" aria-live="polite"></p>
+  </main>
+
+  <div class="admin-tools">
+    <button class="admin-btn" id="adminBtn" type="button">🔒 Admin Dashboard</button>
+  </div>
+
+  <section class="admin-panel" id="adminPanel" aria-label="Admin dashboard">
+    <div class="login-box" id="loginBox">
+      <h2>Admin Access</h2>
+      <p>Enter your dashboard password to view Love Tester analytics.</p>
+      <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Dashboard password">
+      <div class="login-actions"><button class="go" id="loginBtn" type="button">Unlock Dashboard</button></div>
+      <p class="login-error" id="loginError"></p>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+      <div class="dash-head">
+        <div><h2>Love Tester Analytics</h2><p class="lede">See every test submitted to the shared website and how the results are distributed.</p></div>
+        <div class="login-actions">
+          <button class="dash-btn" id="exportBtn" type="button">Export CSV</button>
+          <button class="dash-btn" id="clearBtn" type="button">Clear Data</button>
+          <button class="dash-btn" id="lockBtn" type="button">Lock</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Total Tests</small><strong id="statTests">0</strong></div>
+        <div class="stat"><small>Average Score</small><strong id="statAvg">0%</strong></div>
+        <div class="stat"><small>Highest Score</small><strong id="statHigh">0%</strong></div>
+        <div class="stat"><small>Unique Pairs</small><strong id="statPairs">0</strong></div>
+      </div>
+      <div class="analytics-grid">
+        <div class="analysis-card"><h3>Score Distribution</h3><div id="distribution"></div></div>
+        <div class="analysis-card"><h3>Top Shipping Pairs</h3><div id="topPairs"></div></div>
+      </div>
+      <div class="analysis-card">
+        <h3>All Test Results</h3>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>#</th><th>Person A</th><th>Person B</th><th>Score</th><th>Tier</th><th>Tested</th></tr></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var TIERS = [
+    { min: 0,  name: 'Cold Fish',    line: 'The tube barely moved. Plenty of couples started lower than this.' },
+    { min: 20, name: 'Just Friends', line: 'Easy company and not much spark yet. A good base for something more.' },
+    { min: 40, name: 'Warming Up',   line: 'A steady reading with room to climb.' },
+    { min: 60, name: 'Hot Stuff',    line: 'Strong chemistry. People notice when you two walk in.' },
+    { min: 80, name: 'Burning Love', line: 'Close to the top of the tube. This pair runs hot.' },
+    { min: 95, name: 'Soulmates',    line: 'The tube hit the top. Bell rings, lights flash.' }
+  ];
+  var SUBS = ['Chemistry', 'Trust', 'Laughs'];
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function $(id) { return document.getElementById(id); }
+  var meter = $('meter'), fill = $('fill'), numEl = $('num'), tierEl = $('tier'), blurbEl = $('blurb');
+  var pairEl = $('pair'), barsEl = $('bars'), shareLine = $('shareLine'), copyBtn = $('copy');
+  var goBtn = $('go'), errEl = $('err'), noteEl = $('note'), statusEl = $('status');
+  var inA = $('a'), inB = $('b');
+  var raf = 0, copyTimer = 0;
+
+  function fnv(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  function norm(s) { return s.toLowerCase().normalize('NFKD').replace(/[^\p{L}]/gu, ''); }
+  function compute(a, b) {
+    var key = [norm(a), norm(b)].sort().join('|');
+    /* Balanced, name-order-independent scoring: three independent hashes are
+       averaged, then mapped to 5–95%. This is a fun score, not a scientific
+       measurement of real compatibility. */
+    var h1 = fnv(key + '#love1') / 4294967296;
+    var h2 = fnv(key + '#love2') / 4294967296;
+    var h3 = fnv(key + '#love3') / 4294967296;
+    var score = Math.round(5 + ((h1 + h2 + h3) / 3) * 90);
+    function sub(t, shift) {
+      var h = fnv(key + t) / 4294967296;
+      return Math.max(5, Math.min(95, Math.round(score * 0.65 + h * 35 + shift)));
+    }
+    return { score: score, subs: [sub('#chem', 0), sub('#trust', -4), sub('#laugh', 4)] };
+  }
+  function tierOf(s) {
+    var t = TIERS[0];
+    for (var i = 0; i < TIERS.length; i++) if (s >= TIERS[i].min) t = TIERS[i];
+    return t;
+  }
+
+  /* Build tube labels and ticks */
+  var bandEls = [];
+  TIERS.forEach(function (t, i) {
+    var hi = i + 1 < TIERS.length ? TIERS[i + 1].min : 100;
+    var center = (t.min + hi) / 2;
+    var band = document.createElement('div');
+    band.className = 'band';
+    band.textContent = t.name;
+    band.style.bottom = 'calc(var(--bulb) + ' + center + ' * var(--track) / 100 - 8px)';
+    meter.appendChild(band);
+    bandEls.push(band);
+    if (t.min > 0) {
+      var tick = document.createElement('div');
+      tick.className = 'tick';
+      tick.style.bottom = 'calc(var(--bulb) + ' + t.min + ' * var(--track) / 100)';
+      meter.appendChild(tick);
+    }
+  });
+
+  /* Build the three sub-score bars */
+  var barFills = [], barVals = [];
+  SUBS.forEach(function (name) {
+    var row = document.createElement('div');
+    row.className = 'bar';
+    var l = document.createElement('span'); l.textContent = name;
+    var tr = document.createElement('div'); tr.className = 'track';
+    var f = document.createElement('span'); tr.appendChild(f);
+    var v = document.createElement('span'); v.className = 'val'; v.textContent = '0';
+    row.appendChild(l); row.appendChild(tr); row.appendChild(v);
+    barsEl.appendChild(row);
+    barFills.push(f); barVals.push(v);
+  });
+
+  function paint(v) {
+    var r = Math.round(v);
+    var t = tierOf(r);
+    meter.style.setProperty('--p', v);
+    numEl.textContent = r;
+    tierEl.textContent = t.name;
+    blurbEl.textContent = t.line;
+    bandEls.forEach(function (el, i) { el.classList.toggle('on', TIERS[i] === t); });
+  }
+  function paintBars(subs) {
+    subs.forEach(function (s, i) { barFills[i].style.width = s + '%'; barVals[i].textContent = s; });
+  }
+
+  function run(a, b, instant) {
+    cancelAnimationFrame(raf);
+    var r = compute(a, b);
+    var t = tierOf(r.score);
+    var an = a.trim(), bn = b.trim();
+    pairEl.textContent = an + ' + ' + bn;
+    var line = an + ' + ' + bn + ' scored ' + r.score + '% on the Love Tester: ' + t.name + '.';
+    shareLine.textContent = line;
+    copyBtn.textContent = 'Copy result';
+
+    function finish() {
+      paint(r.score);
+      paintBars(r.subs);
+      statusEl.textContent = line;
+      if (!instant) saveResult(a, b, r);
+      goBtn.disabled = false;
+      goBtn.textContent = 'Test our love';
+    }
+    if (instant || reduce) { finish(); return; }
+
+    goBtn.disabled = true;
+    goBtn.textContent = 'Gripping…';
+    barFills.forEach(function (f) { f.style.width = '0%'; });
+    barVals.forEach(function (v) { v.textContent = '0'; });
+    var t0 = performance.now(), D = 2200;
+    function step(now) {
+      var k = Math.min(1, (now - t0) / D);
+      var e = 1 - Math.pow(1 - k, 3);
+      paint(r.score * e);
+      if (k < 1) raf = requestAnimationFrame(step); else finish();
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var a = inA.value, b = inB.value;
+    if (!norm(a) || !norm(b)) { errEl.textContent = 'Enter a name in both boxes.'; return; }
+    if (norm(a) === norm(b)) { errEl.textContent = 'Those are the same name. Enter two different people.'; return; }
+    errEl.textContent = '';
+    noteEl.hidden = true;
+    run(a, b, false);
+  });
+
+  copyBtn.addEventListener('click', function () {
+    var text = shareLine.textContent;
+    clearTimeout(copyTimer);
+    function reset() { copyTimer = setTimeout(function () { copyBtn.textContent = 'Copy result'; }, 2200); }
+    function select() {
+      var range = document.createRange();
+      range.selectNodeContents(shareLine);
+      var sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      copyBtn.textContent = 'Selected, press copy';
+      reset();
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () {
+        copyBtn.textContent = 'Copied'; reset();
+      }, select);
+    } catch (e) { select(); }
+  });
+
+  /* Shared online admin dashboard. Results are stored server-side so every visitor contributes to the same dashboard. */
+  var adminBtn = $('adminBtn'), adminPanel = $('adminPanel'), loginBox = $('loginBox'), dashboard = $('dashboard');
+  var adminPassword = $('adminPassword'), loginBtn = $('loginBtn'), loginError = $('loginError');
+  var exportBtn = $('exportBtn'), clearBtn = $('clearBtn'), lockBtn = $('lockBtn');
+
+  async function api(path, options) {
+    var res = await fetch(path, Object.assign({credentials:'same-origin', headers:{'Content-Type':'application/json'}}, options || {}));
+    var data = {};
+    try { data = await res.json(); } catch(e) {}
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+  async function saveResult(a,b,r) {
+    try {
+      await api('/api/results', {method:'POST', body:JSON.stringify({a:a.trim(), b:b.trim(), score:r.score, tier:tierOf(r.score).name})});
+    } catch(e) {
+      console.warn('Could not save result:', e.message);
+    }
+  }
+  function escapeHtml(v) {
+    return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
+  }
+  async function renderDashboard() {
+    try {
+      var data = await api('/api/results');
+      var list = data.results || [], n=list.length;
+      var avg=n ? Math.round(list.reduce(function(x,r){return x+r.score},0)/n) : 0;
+      var high=n ? Math.max.apply(null,list.map(function(r){return r.score})) : 0;
+      var pairs={};
+      list.forEach(function(r){
+        var key=[norm(r.a),norm(r.b)].sort().join('|');
+        if(!pairs[key]) pairs[key]={a:r.a,b:r.b,count:0,total:0,best:0};
+        pairs[key].count++; pairs[key].total+=r.score; pairs[key].best=Math.max(pairs[key].best,r.score);
+      });
+      $('statTests').textContent=n; $('statAvg').textContent=avg+'%'; $('statHigh').textContent=high+'%'; $('statPairs').textContent=Object.keys(pairs).length;
+
+      var bands=[{n:'0–19%',min:0,max:19},{n:'20–39%',min:20,max:39},{n:'40–59%',min:40,max:59},{n:'60–79%',min:60,max:79},{n:'80–94%',min:80,max:94},{n:'95–100%',min:95,max:100}];
+      $('distribution').innerHTML=bands.map(function(b){
+        var c=list.filter(function(r){return r.score>=b.min&&r.score<=b.max}).length;
+        var w=n?Math.round(c/n*100):0;
+        return '<div class="barrow"><span>'+b.n+'</span><div class="bartrack"><i style="width:'+w+'%"></i></div><span>'+c+'</span></div>';
+      }).join('') || '<div class="empty">No tests yet.</div>';
+
+      var tops=Object.keys(pairs).map(function(k){return pairs[k]}).sort(function(x,y){return y.count-x.count || y.best-x.best}).slice(0,8);
+      $('topPairs').innerHTML=tops.length?tops.map(function(p){
+        var av=Math.round(p.total/p.count);
+        return '<div class="barrow"><span title="'+escapeHtml(p.a+' + '+p.b)+'">'+escapeHtml(p.a+' + '+p.b).slice(0,18)+'</span><div class="bartrack"><i style="width:'+av+'%"></i></div><span>'+av+'%</span></div>';
+      }).join(''):'<div class="empty">No pairs yet.</div>';
+
+      $('resultsBody').innerHTML=list.length?list.slice().reverse().map(function(r,i){
+        return '<tr><td>'+ (list.length-i) +'</td><td>'+escapeHtml(r.a)+'</td><td>'+escapeHtml(r.b)+'</td><td><strong>'+r.score+'%</strong></td><td>'+escapeHtml(r.tier)+'</td><td>'+new Date(r.time).toLocaleString()+'</td></tr>';
+      }).join(''):'<tr><td colspan="6" class="empty">No test results have been recorded.</td></tr>';
+    } catch(e) {
+      loginError.textContent='Could not load shared results: '+e.message;
+    }
+  }
+  async function unlock() {
+    try {
+      await api('/api/admin/login', {method:'POST', body:JSON.stringify({password:adminPassword.value})});
+      loginError.textContent=''; loginBox.style.display='none'; dashboard.classList.add('open'); adminPassword.value=''; await renderDashboard();
+    } catch(e) { loginError.textContent='Incorrect password or server unavailable.'; }
+  }
+  adminBtn.addEventListener('click',function(){adminPanel.classList.toggle('open');});
+  loginBtn.addEventListener('click',unlock);
+  adminPassword.addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
+  lockBtn.addEventListener('click',async function(){try{await api('/api/admin/logout',{method:'POST'});}catch(e){} dashboard.classList.remove('open');loginBox.style.display='block';});
+  clearBtn.addEventListener('click',async function(){
+    if(confirm('Delete ALL Love Tester results from the shared dashboard?')){
+      try { await api('/api/results',{method:'DELETE'}); await renderDashboard(); } catch(e) { alert(e.message); }
+    }
+  });
+  exportBtn.addEventListener('click',async function(){
+    try {
+      var data=await api('/api/results'), list=data.results||[]; if(!list.length){alert('No results to export.');return;}
+      var rows=[['Person A','Person B','Score','Tier','Tested At']].concat(list.map(function(r){return [r.a,r.b,r.score+'%',r.tier,r.time]}));
+      var csv=rows.map(function(row){return row.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(',')}).join('\r\n');
+      var blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+      a.href=url;a.download='love-tester-results.csv';a.click();URL.revokeObjectURL(url);
+    } catch(e) { alert(e.message); }
+  });
+
+  /* Opens on the example pair, already at its reading */
+  run(inA.value, inB.value, true);
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,9 @@
+{
+  "name": "love-tester-netlify-shared-dashboard",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Love Tester with a shared Netlify dashboard and persistent analytics",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.3"
+  }
+}
